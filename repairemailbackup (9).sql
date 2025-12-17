@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 16, 2025 at 11:56 AM
+-- Generation Time: Dec 17, 2025 at 11:53 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -224,7 +224,20 @@ INSERT INTO `fileupload` (`FileUploadId`, `filename`, `filepath`, `NotirepairId`
 (403, 'angryupload2025-11-27.png', 'public//angryupload2025-11-27.png', 271),
 (404, 'SampleVideo_1280x720_1mbupload2025-11-27.mp4', 'public//SampleVideo_1280x720_1mbupload2025-11-27.mp4', 272),
 (406, 'angryupload2025-11-27.png', 'public//angryupload2025-11-27.png', 274),
-(407, 'angryupload2025-12-16.png', 'public//angryupload2025-12-16.png', 275);
+(407, 'angryupload2025-12-16.png', 'public//angryupload2025-12-16.png', 275),
+(408, 'angryupload2025-12-17.png', 'public//angryupload2025-12-17.png', 276),
+(409, 'angryupload2025-12-17.png', 'public//angryupload2025-12-17.png', 277),
+(410, 'coco_3upload2025-12-17.png', 'public//coco_3upload2025-12-17.png', 278),
+(411, 'angryupload2025-12-17.png', 'public//angryupload2025-12-17.png', 279),
+(412, 'coco_2upload2025-12-17.png', 'public//coco_2upload2025-12-17.png', 279),
+(413, 'coco_3upload2025-12-17.png', 'public//coco_3upload2025-12-17.png', 279),
+(414, 'coco_4upload2025-12-17.png', 'public//coco_4upload2025-12-17.png', 279),
+(415, 'coco_5upload2025-12-17.png', 'public//coco_5upload2025-12-17.png', 279),
+(416, 'angryupload2025-12-17.png', 'public//angryupload2025-12-17.png', 280),
+(417, 'coco_1upload2025-12-17.png', 'public//coco_1upload2025-12-17.png', 280),
+(418, 'coco_2upload2025-12-17.png', 'public//coco_2upload2025-12-17.png', 280),
+(419, 'coco_3upload2025-12-17.png', 'public//coco_3upload2025-12-17.png', 280),
+(420, 'coco_4upload2025-12-17.png', 'public//coco_4upload2025-12-17.png', 280);
 
 -- --------------------------------------------------------
 
@@ -292,7 +305,12 @@ INSERT INTO `notirepair` (`NotirepairId`, `equipmentId`, `DateNotirepair`, `Deat
 (271, 112, '2025-11-27 04:03:18', 'ห', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', '', '0000-00-00 00:00:00', NULL),
 (272, 112, '2025-11-27 04:04:06', 'เเเเ', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', '', '0000-00-00 00:00:00', NULL),
 (274, 112, '2025-11-27 05:14:49', 'cccc', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', '', '0000-00-00 00:00:00', NULL),
-(275, 110, '2025-12-16 10:48:42', 'sssssss', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', 'ยังไม่ปิดงาน', NULL, 'C01');
+(275, 110, '2025-12-16 10:48:42', 'sssssss', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', 'ปิดงานเรียบร้อย', '2025-12-17 15:12:57', 'C01'),
+(276, 110, '2025-12-17 08:40:03', 'จอพังดดดังดงดงดยกพร่ฑบบดเากตพาาดพสดเ่พังไปหมดทุกอสสดเวกวดเพสดววไม่ว้่านเววกพ', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', 'ปิดงานเรียบร้อย', '2025-12-17 15:53:06', 'C01'),
+(277, 110, '2025-12-17 08:41:10', '1.สวัสดีปีใหม่\r\n2.สวัสดีชาวโลก\r\n3.เบื่อหวะ', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', 'ยังไม่ปิดงาน', NULL, 'C01'),
+(278, 110, '2025-12-17 08:41:57', '1.ก2ด2ก2ด2เก2ด2เ2กด2เ2กด2เก2ด2เก2ดเ\r\n2.กดเกดเกดเพดเสยสสสดนเพสกนดสสพพสสดนเพสสสดเสกนสพสดนเนสพสดกสเพดเพ\r\n3.ดกเาพยวดวเววดกพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพพ', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', 'ยังไม่ปิดงาน', NULL, 'C01'),
+(279, 110, '2025-12-17 09:53:48', 'อยากจะเเจ้งซ่อมคอมจอฟ้าใช้การไม่ได้มาหลายวัน เครื่องปริ้นพัง กาน้ำเสีย ไมค์พัง เตาเเก๊สพัง ทำอะไรไม่ได้', 'chavanlak.p@ku.th', 'repaircentertgi@gmail.com', 'ยังไม่ปิดงาน', NULL, 'F01'),
+(280, 110, '2025-12-17 10:20:37', '- ไม่มีเมลสาขาด้วย \r\n- BM ไม่อัพเดทด้วยเเหละว้าววววววววววววววววววววววววววววววววววววววววววววววววว\r\n- ต้องเเก้ใหม่อีกเชื่อดิ', 'chavanlak.p@ku.th', 'example@mail.com', 'ยังไม่ปิดงาน', NULL, 'FQ01');
 
 -- --------------------------------------------------------
 
@@ -324,7 +342,11 @@ INSERT INTO `statustracking` (`statustrackingId`, `NotirepairId`, `status`, `sta
 (11, 265, 'ส่งSuplierเเล้ว', '2025-12-09 15:44:50'),
 (12, 266, 'กำลังดำเนินการซ่อม | ช่างStore', '2025-12-09 15:49:11'),
 (13, 266, 'ซ่อมงานเสร็จเเล้ว | ช่างStore', '2025-12-09 15:49:57'),
-(14, 264, 'กำลังดำเนินการซ่อม | ช่างStore', '2025-12-09 16:13:22');
+(14, 264, 'กำลังดำเนินการซ่อม | ช่างStore', '2025-12-09 16:13:22'),
+(15, 275, 'ได้รับของเเล้ว', '2025-12-17 15:12:43'),
+(16, 276, 'ได้รับของเเล้ว', '2025-12-17 15:42:52'),
+(17, 277, 'ได้รับของเเล้ว', '2025-12-17 16:00:05'),
+(18, 280, 'ได้รับของเเล้ว', '2025-12-17 17:25:49');
 
 -- --------------------------------------------------------
 
@@ -461,19 +483,19 @@ ALTER TABLE `equipmenttype`
 -- AUTO_INCREMENT for table `fileupload`
 --
 ALTER TABLE `fileupload`
-  MODIFY `FileUploadId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=408;
+  MODIFY `FileUploadId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=421;
 
 --
 -- AUTO_INCREMENT for table `notirepair`
 --
 ALTER TABLE `notirepair`
-  MODIFY `NotirepairId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=276;
+  MODIFY `NotirepairId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=281;
 
 --
 -- AUTO_INCREMENT for table `statustracking`
 --
 ALTER TABLE `statustracking`
-  MODIFY `statustrackingId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `statustrackingId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `zone`
