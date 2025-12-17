@@ -176,6 +176,7 @@ Route::middleware(['RoleMiddleware:Frontstaff'])->group(function () {
     Route::get('/noti/storefront', [NotiRepairController::class, 'getNotiForStoreFront'])->name('noti.storefront');
         // ปุ่มกดรับของ (POST Action)
     Route::post('/noti/accept/{notirepaitid}', [NotiRepairController::class, 'acceptNotisRepair'])->name('noti.accept');
+    Route::post('/noti/close/{notirepaitid}', [NotiRepairController::class, 'closedJobs'])->name('noti.close');
 
 });
 

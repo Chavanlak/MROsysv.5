@@ -112,4 +112,49 @@ class NotirepairRepository
     //ถ้ากระบวนการการทำงานทั้งหมดเสร็จเเล้วให้กดปิดงานโดยหน้าร้าน
     //พอมีการซ่อมเสร็จสิ้นเเล้ว พนักงานหน้าร้านจะกดปุ่มปิดงาน
 
+    // public static function findById($notirepaitid){
+    //     return Notirepair::find($notirepaitid);
+    // }
+  
+    //การจัดการสถานะ
+    // public static function updateStatus($notiId, $status)
+    // {
+    //     return DB::connection('third')
+    //         ->table('statustracking')
+    //         ->insert([
+    //             'NotirepairId' => $notiId,
+    //             'status'       => $status,
+    //             'statusDate'   => Carbon::now(),
+    //         ]);
+    // }
+    public static function findById($id){
+        return Notirepair::find($id);
+    }
+    public static function updateStatusTracking($notiId, $status)
+    {
+        return DB::connection('third')
+            ->table('statustracking')
+            ->insert([
+                'NotirepairId' => $notiId,
+                'status'       => $status,
+                'statusDate'   => Carbon::now(),
+            ]);
+    }
+//ดึงสถานะบ่าสุด
+    public static function getCurrentStatus($notiId)
+    {
+        return DB::connection('third')
+            ->table('statustracking')
+            ->where('NotirepairId', $notiId)
+            ->orderByDesc('statustrackingId')
+            ->value('status');
+    }
+    public static function closeJobInMainTable($id)
+    {
+        return Notirepair::where('NotirepairId', $id)->update([
+            'closedJobs' => 'ปิดงานเรียบร้อย',
+            'DateCloseJobs' => Carbon::now()
+        ]);
+    }
+
 }

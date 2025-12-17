@@ -1,4 +1,4 @@
-@extends('layout.mainlayout') {{-- 💡 เปลี่ยนมาใช้ Layout ใหม่ที่กำหนด staffname และ Logout --}}
+@extends('layout.mainlayout')
 
 @section('title', 'รายการแจ้งซ่อม')
 
@@ -6,7 +6,6 @@
 
     <h5 class="fw-bold text-dark mb-3">
         <i class="bi bi-list-task"></i> รายการแจ้งซ่อมทั้งหมด
-        {{-- ✅ เพิ่มการแสดงชื่อผู้ใช้งานในส่วน Content ตามคำขอ --}}
         @if (Auth::check())
             <span class="text-primary small fw-normal">({{ Auth::user()->staffname ?? 'ผู้ดูแลระบบ' }})</span>
         @endif
@@ -19,38 +18,28 @@
         </div>
     @endif
 
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     {{-- Desktop View --}}
     <div class="card shadow-sm d-none d-md-block">
         <div class="card-body table-responsive">
             <table id="notiTable" class="table table-hover align-middle">
                 <thead class="table-primary text-center">
                     <tr>
-                        <th style="width: 10%">รหัสแจ้งซ่อม</th>
-                        <th style="width: 15%">อุปกรณ์</th>
-                        <th style="width: 30%">รายละเอียด</th>
+                        <th style="width: 8%">รหัส</th>
+                        <th style="width: 12%">อุปกรณ์</th>
+                        <th style="width: 25%">รายละเอียด</th>
+                        <th style="width: 15%">สาขา / โซน</th> {{-- ✅ หัวข้อใหม่ --}}
                         <th style="width: 10%">วันที่แจ้ง</th>
-                        <th style="width: 10%">วันที่อัพเดทล่าสุด</th>
+                        <th style="width: 10%">อัปเดตล่าสุด</th>
                         <th style="width: 10%">สถานะ</th>
                         <th style="width: 10%">จัดการ</th>
-                        <th>สาขา</th>
                     </tr>
                 </thead>
                 <tbody class="text-center">
-                    {{-- Desktop View --}}
                     @foreach ($noti as $item)
                         @php
-                            $status = $item->status ?? 'ได้รับของเเล้ว'; // Admin View จะกรองสถานะ 'ยังไม่ได้รับของ' ออกไป
-                            $isCompleted =
-                                $status == 'ซ่อมงานเสร็จเเล้ว | ช่างStore' || $status == 'ซ่อมงานเสร็จเเล้ว | Supplier';
+                            $status = $item->status ?? 'ได้รับของเเล้ว';
+                            $isCompleted = str_contains($status, 'ซ่อมงานเสร็จเเล้ว');
                             $displayStatus = $isCompleted ? 'ซ่อมเสร็จสิ้น' : $status;
-
                             $color = match ($status) {
                                 'ได้รับของเเล้ว' => 'primary',
                                 'กำลังดำเนินการซ่อม | ช่างStore' => 'warning',
@@ -60,33 +49,26 @@
                             };
                         @endphp
                         <tr>
-                            <td>{{ $item->NotirepairId }}</td>
+                            <td class="fw-bold">{{ $item->NotirepairId }}</td>
                             <td>{{ $item->equipmentName }}</td>
-                            <td class="text-start">{{ $item->DeatailNotirepair }}</td>
+                            <td class="text-start small">{{ $item->DeatailNotirepair }}</td>
+                            {{-- ✅ แสดงรหัสสาขา และ ชื่อสาขา --}}
                             <td>
-                                @if ($item->DateNotirepair)
-                                    {{ date('d-m-Y H:i', strtotime($item->DateNotirepair)) }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            {{-- แสดงวันที่สถานะล่าสุด --}}
-                            <td>
-                                @if ($item->statusDate)
-                                    {{ date('d-m-Y H:i', strtotime($item->statusDate)) }}
-                                @else
-                                    -
-                                @endif
-                            </td>
+                                <div class="fw-bold text-dark">{{ $item->branchCode }}</div>
+                                <div class="small text-muted text-truncate" style="max-width: 150px;">
+                                    {{-- {{ $item->zone ?? 'ไม่ระบุโซน' }}</div> --}}
+                                    เอสพลานาด</div>
 
+                            </td>
+                            <td class="small">
+                                {{ $item->DateNotirepair ? date('d-m-Y H:i', strtotime($item->DateNotirepair)) : '-' }}</td>
+                            <td class="small">
+                                {{ $item->statusDate ? date('d-m-Y H:i', strtotime($item->statusDate)) : '-' }}</td>
                             <td><span class="badge bg-{{ $color }}">{{ $displayStatus }}</span></td>
                             <td>
                                 @if ($isCompleted)
-                                    <button class="btn btn-secondary btn-sm" disabled>
-                                        <i class="bi bi-check-circle"></i> เสร็จสิ้น
-                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" disabled>เสร็จสิ้น</button>
                                 @else
-                                    {{-- สถานะอื่นๆ ที่ไม่เสร็จสิ้นทั้งหมด --}}
                                     <a href="{{ route('noti.show_update_form', $item->NotirepairId) }}"
                                         class="btn btn-warning btn-sm">
                                         <i class="bi bi-pencil-square"></i> อัปเดต
@@ -95,140 +77,147 @@
                             </td>
                         </tr>
                     @endforeach
-
                 </tbody>
             </table>
         </div>
-
-        {{-- ลิงก์แบ่งหน้า (Pagination) สำหรับ Desktop View --}}
         <div class="mt-4 d-flex justify-content-center">
             {{ $noti->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
-    {{-- Mobile View (Card View พร้อม Pagination) --}}
+    {{-- Mobile View --}}
     <div class="d-md-none">
         @foreach ($noti as $item)
             @php
-                $status = $item->status ?? 'ได้รับของเเล้ว'; // Admin View จะกรองสถานะ 'ยังไม่ได้รับของ' ออกไป
-                $isCompleted = $status == 'ซ่อมงานเสร็จเเล้ว | ช่างStore' || $status == 'ซ่อมงานเสร็จเเล้ว | Supplier';
-                $displayStatus = $isCompleted ? 'ซ่อมเสร็จสิ้น' : $status;
+                $status = $item->status ?? 'ได้รับของเเล้ว';
+                $isCompleted = str_contains($status, 'ซ่อมงานเสร็จเเล้ว');
 
-                $color = match ($status) {
-                    'ได้รับของเเล้ว' => 'primary',
-                    'กำลังดำเนินการซ่อม | ช่างStore' => 'warning',
-                    'ส่งSuplierเเล้ว' => 'info',
-                    'ซ่อมงานเสร็จเเล้ว | ช่างStore', 'ซ่อมงานเสร็จเเล้ว | Supplier' => 'success',
-                    default => 'secondary',
+                // กำหนดสีและ Icon ตามสถานะ
+                $statusConfig = match ($status) {
+                    'ได้รับของเเล้ว' => ['color' => 'primary', 'icon' => 'bi-box-seize', 'bg' => '#e7f1ff'],
+                    'กำลังดำเนินการซ่อม | ช่างStore' => ['color' => 'warning', 'icon' => 'bi-tools', 'bg' => '#fff3cd'],
+                    'ส่งSuplierเเล้ว' => ['color' => 'info', 'icon' => 'bi-truck', 'bg' => '#cff4fc'],
+                    'ซ่อมงานเสร็จเเล้ว | ช่างStore', 'ซ่อมงานเสร็จเเล้ว | Supplier' => [
+                        'color' => 'success',
+                        'icon' => 'bi-check-circle-fill',
+                        'bg' => '#d1e7dd',
+                    ],
+                    default => ['color' => 'secondary', 'icon' => 'bi-info-circle', 'bg' => '#f8f9fa'],
                 };
             @endphp
 
-            <div class="card mb-3 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold text-primary">📦 รหัส: {{ $item->NotirepairId }}</h5>
-                    <p class="mb-1"><strong>อุปกรณ์:</strong> {{ $item->equipmentName }}</p>
-                    <p class="mb-1"><strong>รายละเอียด:</strong> {{ $item->DeatailNotirepair }}</p>
+            <div class="card mb-3 border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                {{-- แถบสีด้านซ้ายบอกสถานะ --}}
+                <div class="d-flex">
+                    <div style="width: 6px; background-color: var(--bs-{{ $statusConfig['color'] }});"></div>
 
-                    <p class="mb-1 text-muted small">
-                        <i class="bi bi-clock"></i>วันที่แจ้งซ่อม:
-                        <span class="fw-normal">{{ date('d-m-Y H:i', strtotime($item->DateNotirepair)) }}</span>
-                    </p>
-                    {{-- แสดงวันที่สถานะล่าสุด (statusDate) --}}
-                    @if ($item->statusDate)
-                        <p class="mb-1 text-muted small">
-                            <i class="bi bi-clock"></i> สถานะล่าสุด:
-                            <span class="fw-normal">{{ date('d-m-Y H:i', strtotime($item->statusDate)) }}</span>
+                    <div class="card-body p-3">
+                        {{-- Header: ID และ Status Badge --}}
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="text-muted small fw-bold">#{{ $item->NotirepairId }}</span>
+                                <h6 class="fw-bold mb-0 text-dark">{{ $item->equipmentName }}</h6>
+                            </div>
+                            <span class="badge rounded-pill bg-{{ $statusConfig['color'] }} px-3 py-2">
+                                <i class="bi {{ $statusConfig['icon'] }} me-1"></i>
+                                {{ $isCompleted ? 'เสร็จสิ้น' : $status }}
+                            </span>
+                        </div>
+
+                        {{-- รายละเอียด Location & Zone --}}
+                        <div class="p-2 mb-2 rounded" style="background-color: #f8f9fa;">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                                <span class="fw-bold small">สาขา: {{ $item->branchCode }} เอสพลานาด</span>
+                            </div>
+                            {{-- <div class="d-flex align-items-center">
+                                <i class="bi bi-layers text-muted me-2"></i>
+                                <span class="text-muted small">โซน: {{ $item->zone ?? 'ไม่ได้ระบุ' }}</span>
+                            </div> --}}
+                        </div>
+
+                        {{-- รายละเอียดอาการ --}}
+                        <p class="text-secondary small mb-3">
+                            <i class="bi bi-chat-left-text me-1"></i> {{ $item->DeatailNotirepair }}
                         </p>
-                    @endif
 
-                    <p class="mb-2"><span class="badge bg-{{ $color }} fs-6">{{ $displayStatus }}</span></p>
+                        <hr class="my-2 opacity-25">
 
-                    @if ($isCompleted)
-                        {{-- สถานะการซ่อมเสร็จสิ้น --}}
-                        <button class="btn btn-secondary btn-sm w-100" disabled>
-                            <i class="bi bi-check-circle"></i> เสร็จสิ้น
-                        </button>
-                    @else
-                        <a href="{{ route('noti.show_update_form', $item->NotirepairId) }}"
-                            class="btn btn-warning btn-sm w-100">
-                            <i class="bi bi-pencil-square"></i> อัปเดต
-                        </a>
-                    @endif
+                        {{-- Footer: วันที่ และ ปุ่มจัดการ --}}
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <div><i class="bi bi-calendar3 me-1"></i>
+                                    {{ date('d/m/y H:i', strtotime($item->DateNotirepair)) }}</div>
+                            </div>
+
+                            @if (!$isCompleted)
+                                <a href="{{ route('noti.show_update_form', $item->NotirepairId) }}"
+                                    class="btn btn-warning btn-sm fw-bold px-3 shadow-sm" style="border-radius: 8px;">
+                                    <i class="bi bi-pencil-square me-1"></i> อัปเดต
+                                </a>
+                            @else
+                                <span class="text-success small fw-bold">
+                                    <i class="bi bi-check-all"></i> งานเรียบร้อย
+                                </span>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         @endforeach
 
-        {{-- ลิงก์แบ่งหน้า (Pagination) สำหรับ Mobile View  --}}
-        <div class="mt-4 d-flex justify-content-center">
+        {{-- Pagination สำหรับ Mobile --}}
+        <div class="d-flex justify-content-center py-3">
             {{ $noti->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
-    {{-- 💡 JavaScript สำหรับเริ่มต้น Datatable และเชื่อมต่อช่องค้นหา Navbar (โค้ดเดิมที่แก้ไขการจัดกึ่งกลาง) --}}
     @push('scripts')
         <script>
             $(document).ready(function() {
-                // ตรวจสอบขนาดหน้าจอ (เฉพาะ Desktop)
                 if (window.matchMedia('(min-width: 768px)').matches) {
-
-                    const notiTable = $('#notiTable').DataTable({
+                    $('#notiTable').DataTable({
                         "searching": false,
                         "paging": false,
-                        "lengthChange": false,
                         "ordering": true,
                         "info": false,
                         "autoWidth": false,
                         "columnDefs": [{
-                                "width": "10%",
                                 "targets": 0,
                                 "className": "dt-center"
                             },
                             {
-                                "width": "15%",
                                 "targets": 1,
                                 "className": "dt-center"
                             },
                             {
-                                "width": "30%",
                                 "targets": 2,
                                 "className": "text-start"
                             },
                             {
-                                "width": "10%",
                                 "targets": 3,
                                 "className": "dt-center"
-                            },
+                            }, // ✅ คอลัมน์สาขา/โซน
                             {
-                                "width": "10%",
                                 "targets": 4,
                                 "className": "dt-center"
                             },
                             {
-                                "width": "10%",
                                 "targets": 5,
                                 "className": "dt-center"
                             },
                             {
-                                "width": "15%",
                                 "targets": 6,
+                                "className": "dt-center"
+                            },
+                            {
+                                "targets": 7,
                                 "className": "dt-center"
                             }
                         ],
-                        // ✅ แก้ไขตรงนี้: ฝังภาษาไทยลงไปเลย ไม่ต้องโหลด URL
                         "language": {
-                            "emptyTable": "ไม่พบข้อมูลในตาราง",
-                            "info": "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
-                            "infoEmpty": "แสดง 0 ถึง 0 จาก 0 รายการ",
-                            "infoFiltered": "(กรองข้อมูล _MAX_ ทุกรายการ)",
-                            "lengthMenu": "แสดง _MENU_ รายการ",
-                            "search": "ค้นหา:",
-                            "zeroRecords": "ไม่พบข้อมูลที่ตรงกัน",
-                            "paginate": {
-                                "first": "หน้าแรก",
-                                "last": "หน้าสุดท้าย",
-                                "next": "ถัดไป",
-                                "previous": "ก่อนหน้า"
-                            }
+                            "emptyTable": "ไม่พบข้อมูล",
+                            "zeroRecords": "ไม่พบข้อมูลที่ตรงกัน"
                         }
                     });
                 }

@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\DB;
 
 use Illuminate\Notifications\Notification;
 
+use function PHPUnit\Framework\directoryExists;
+
 class NotiRepairController extends Controller
 {
     // public static function getallManegers(){
@@ -262,6 +264,7 @@ class NotiRepairController extends Controller
                 ->groupBy('NotirepairId');
 
             $query = NotiRepair::select(
+                'notirepair.branchCode', // ต้อง Select คอลัมน์ branch มาด้วย
                 'notirepair.*',
                 'latest_status.status as status',
                 'latest_status.statusDate as statusDate',
@@ -294,6 +297,7 @@ class NotiRepairController extends Controller
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('notirepair.NotirepairId', 'like', "%$searchTerm%")
                         ->orWhere('equipment.equipmentName', 'like', "%$searchTerm%")
+                        ->orWhere('notirepair.branchCode', 'like', "%$searchTerm%") // ค้นหาด้วยรหัสสาขา
                         ->orWhere('notirepair.DeatailNotirepair', 'like', "%$searchTerm%")
                         ->orWhere('latest_status.status', 'like', "%$searchTerm%");
                 });
@@ -317,6 +321,7 @@ class NotiRepairController extends Controller
     // return redirect()->route('noti.show_update_form', ['notirepaitid' => $notirepaitid])
     //         ->with('success', 'รับเรื่องเรียบร้อยแล้ว! เข้าสู่หน้าอัพเดตสถานะ');
     // }
+    //front
     public function acceptNotisRepair(Request $request, $notirepaitid)
     {
 
@@ -350,6 +355,49 @@ class NotiRepairController extends Controller
 
         return redirect()->back()->with('success', 'รายการแจ้งซ่อมรหัส ' . $notirepaitid . ' ได้รับเรื่องเรียบร้อยแล้ว');
     }
+    // public static function closedJobs(Request $request,$notirepairid){
+    //     $noti = NotirepairRepository::findById($notirepairid);
+    //     if(!$noti){
+    //         return redirect()->back()->with('error','ไม่พบรหัสการเเจ้งซ่อม');
+    //     }
+    //     $currentStatus = NotirepairRepository::getCurrentStatus($notirepairid);
+    //     if($currentStatus !== 'ได้รับของเเล้ว'){
+    //         return redirect()->back()->with('error', value: 'ไม่สามารถปิดงานได้ (สถานะปัจจุบัน: ' . ($currentStatus ?: 'ยังไม่ได้รับของ') . ')');
+    //     }
+
+    //     NotirepairRepository::updateStatus($notirepairid,'ปิดงาน');
+    //     return redirect()->back()->with('success', "ปิดงานรหัส $notirepairid เรียบร้อยแล้ว");
+
+    // }
+    public function closedJobs(Request $request, $notirepairid)
+{
+    // 1. ค้นหาข้อมูลผ่าน Repo
+    $noti = NotirepairRepository::findById($notirepairid);
+    if (!$noti) {
+        return redirect()->back()->with('error', 'ไม่พบรายการแจ้งซ่อม');
+    }
+
+    // 2. เช็คสถานะปัจจุบัน
+    $currentStatus = NotirepairRepository::getCurrentStatus($notirepairid);
+    if ($currentStatus !== 'ได้รับของเเล้ว') {
+        return redirect()->back()->with('error', 'ไม่สามารถปิดงานได้ (ต้องได้รับของก่อน)');
+    }
+
+    try {
+        DB::transaction(function () use ($notirepairid) {
+            // ✅ 3.1 อัปเดสตารางหลัก (ฟิลด์ closedJobs, DateCloseJobs)
+            NotirepairRepository::closeJobInMainTable($notirepairid);
+
+            // ✅ 3.2 บันทึกประวัติใน statustracking
+            NotirepairRepository::updateStatusTracking($notirepairid, 'ปิดงาน');
+        });
+
+        return redirect()->back()->with('success', "ปิดงานรหัส $notirepairid และบันทึกข้อมูลลงฐานข้อมูลเรียบร้อยแล้ว");
+
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' . $e->getMessage());
+    }
+}
     public function showUpdateStatusForm($notirepaitid)
     {
         // ดึงข้อมูลการแจ้งซ่อมที่ต้องการอัพเดต
@@ -465,7 +513,7 @@ class NotiRepairController extends Controller
                 return back()->with('error', 'ไม่พบข้อมูลสาขาในตาราง permission_bm สำหรับพนักงานคนนี้');
             }
 
-            // ----------------------------------------------
+       
 
             $searchTerm = $request->input('search');
 
@@ -555,18 +603,7 @@ class NotiRepairController extends Controller
     //     $closedJob = StatustrackingRepository::closeedJobStatus();
     //     return view('',compact('closedJob'));
     // }
-    public static function ShowBranch()
-    {
-        // $role = Session::get('Frontstaff');
-        // if ($role = 'Frontstaff') {
-        //     $staffcode = Session::get('staffcode');
-        $staffcode = Session::get('staffcode');
-        $branchid = PermissionBMRepository::getBranchCode($staffcode);
-        // $branchname = MastbranchRepository::getBranchName($branchid);
-
-
-        // return $role;
-        dd($branchid);
-    }
+  
     // }
+ 
 }
