@@ -115,7 +115,7 @@ class NotirepairRepository
     // public static function findById($notirepaitid){
     //     return Notirepair::find($notirepaitid);
     // }
-  
+
     //การจัดการสถานะ
     // public static function updateStatus($notiId, $status)
     // {
@@ -127,7 +127,8 @@ class NotirepairRepository
     //             'statusDate'   => Carbon::now(),
     //         ]);
     // }
-    public static function findById($id){
+    public static function findById($id)
+    {
         return Notirepair::find($id);
     }
     public static function updateStatusTracking($notiId, $status)
@@ -140,7 +141,7 @@ class NotirepairRepository
                 'statusDate'   => Carbon::now(),
             ]);
     }
-//ดึงสถานะบ่าสุด
+    //ดึงสถานะบ่าสุด
     public static function getCurrentStatus($notiId)
     {
         return DB::connection('third')
@@ -156,5 +157,68 @@ class NotirepairRepository
             'DateCloseJobs' => Carbon::now()
         ]);
     }
+    //ofiicer
 
+    public static function getTrackingListForAdmin($searchTerm = null, $perPage = 5)
+    {
+        // 1. ดึง ID ล่าสุดของสถานะจากตาราง statustracking (DB ที่สาม)
+        $latestStatusId = DB::connection('third')
+            ->table('statustracking')
+            ->select('NotirepairId', DB::raw('MAX(statustrackingId) as latest_id'))
+            ->groupBy('NotirepairId');
+
+        // 2. Query หลัก
+        // $query = Notirepair::select(
+        //         'notirepair.*',
+        //         'equipment.equipmentName',
+        //         DB::raw("COALESCE(latest_status.status, 'ยังไม่ได้รับของ') as current_status"),
+        //         'latest_status.statusDate as last_status_date'
+        //     )
+        //     ->leftJoin('equipment', 'notirepair.equipmentId', '=', 'equipment.equipmentId')
+        //     // Join เพื่อเอา ID ล่าสุด
+        //     ->leftJoinSub($latestStatusId, 'latest_id_table', function ($join) {
+        //         $join->on('notirepair.NotirepairId', '=', 'latest_id_table.NotirepairId');
+        //     })
+        //     // Join เพื่อเอาชื่อสถานะจริงจาก DB ที่สาม
+        //     ->leftJoin(
+        //         DB::raw(env('THIRD_DB_DATABASE') . '.statustracking as latest_status'),
+        //         function ($join) {
+        //             $join->on('latest_status.NotirepairId', '=', 'notirepair.NotirepairId')
+        //                  ->on('latest_status.statustrackingId', '=', 'latest_id_table.latest_id');
+        //         }
+        //     );
+        // 2. Query หลัก
+        $query = Notirepair::select(
+            'notirepair.*',
+            'equipment.equipmentName',
+            // ตั้งชื่อ alias ให้ชัดเจน ป้องกันการทับกับ column ใน table หลัก
+            DB::raw("COALESCE(latest_status.status, 'ยังไม่ได้รับของ') as current_status"),
+            'latest_status.statusDate as last_status_date'
+        )
+            ->leftJoin('equipment', 'notirepair.equipmentId', '=', 'equipment.equipmentId')
+            ->leftJoinSub($latestStatusId, 'latest_id_table', function ($join) {
+                $join->on('notirepair.NotirepairId', '=', 'latest_id_table.NotirepairId');
+            })
+            ->leftJoin(
+                // ใช้ config แทน env เพื่อความเสถียร
+                DB::raw(config('database.connections.third.database') . '.statustracking as latest_status'),
+                function ($join) {
+                    $join->on('latest_status.NotirepairId', '=', 'notirepair.NotirepairId')
+                        ->on('latest_status.statustrackingId', '=', 'latest_id_table.latest_id');
+                }
+            );
+
+        // 3. ระบบค้นหา (ถ้ามี)
+        if ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('notirepair.NotirepairId', 'like', "%$searchTerm%")
+                    ->orWhere('notirepair.branchCode', 'like', "%$searchTerm%")
+                    ->orWhere('equipment.equipmentName', 'like', "%$searchTerm%");
+            });
+        }
+
+        return $query->orderBy('notirepair.DateNotirepair', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
 }

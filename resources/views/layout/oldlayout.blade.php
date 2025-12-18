@@ -15,11 +15,12 @@
 
     {{-- datatable --}}
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
-    {{-- <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css"> --}}
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
-    {{-- <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script> --}}
+    {{-- popup --}}
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Noto Sans Thai', sans-serif;
@@ -38,17 +39,14 @@
         .sidebar {
             background-color: #ffffff;
             position: fixed;
-            /* แก้ไขสำหรับ Desktop: ชิดขอบบนสุดและทับ Navbar */
             top: 0;
             left: 0;
             width: 200px;
             height: 100vh;
-            /* ความสูงเต็มจอ */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
             border-right: 1px solid #e9ecef;
             transition: all 0.3s ease;
             z-index: 1030;
-            /* ทำให้ทับ Navbar (z-index: 1000) */
         }
 
         .sidebar .nav-link {
@@ -71,10 +69,8 @@
         /* 3. Content Area: ดันตาม Sidebar บน Desktop */
         .content-area {
             padding: 20px;
-            /* ต้องมี margin-left เพื่อหลีกเลี่ยง Sidebar */
             margin-left: 200px;
             transition: margin-left 0.3s ease;
-            /* เพิ่ม padding-top เพื่อหลีกเลี่ยง Navbar */
             padding-top: 80px;
         }
 
@@ -84,11 +80,9 @@
                 margin-left: 0;
                 padding: 15px;
                 padding-top: 80px;
-                /* รักษา padding-top สำหรับ Mobile ด้วย */
             }
 
             .sidebar {
-                /* การตั้งค่า Mobile ยังคงเดิม (ทับ Navbar) */
                 top: 0;
                 height: 100vh;
                 width: 65%;
@@ -106,22 +100,16 @@
             }
 
             .search-container {
-                /* ปกติจะซ่อนไว้บน Mobile/Tablet */
                 display: none !important;
                 position: absolute;
-                /* กำหนดตำแหน่งให้ทับส่วนอื่นของ Navbar */
                 top: 0;
                 left: 0;
                 width: 100%;
                 padding: 0 15px;
-                /* Padding ด้านข้าง */
                 background-color: #f5f7fa;
-                /* สีพื้นหลังเดียวกับ Navbar */
                 height: 60px;
-                /* ความสูงเพื่อให้ทับ Navbar */
                 align-items: center;
                 z-index: 999;
-                /* ให้ต่ำกว่าปุ่มเมนู (1000) แต่สูงกว่าเนื้อหาอื่น */
             }
 
             /* คลาสที่จะใช้ JS สลับการแสดงผล */
@@ -169,14 +157,10 @@
             }
         }
 
-        /* **CSS แก้ไขตำแหน่ง Desktop Search** */
+        /* CSS แก้ไขตำแหน่ง Desktop Search */
         @media (min-width: 992px) {
             .search-container {
-                /* กำหนดจุดเริ่มต้นให้อยู่ด้านขวาของ Sidebar (200px) */
                 margin-left: 210px !important;
-                /* 200px + 10px spacing */
-
-                /* จัดให้ช่องค้นหาอยู่ตรงกลางของพื้นที่ที่กำหนด */
                 margin-right: auto !important;
             }
         }
@@ -194,96 +178,183 @@
                 <i class="bi bi-list" style="font-size: 1.5rem;"></i>
             </button>
 
-            {{-- **ปุ่มค้นหา Mobile (แสดงเฉพาะ Mobile/Tablet)** --}}
+            {{-- ปุ่มค้นหา Mobile (แสดงเฉพาะ Mobile/Tablet) --}}
             <button class="btn btn-link text-dark d-lg-none me-3 p-0 search-button-mobile" id="toggleSearch">
                 <i class="bi bi-search" style="font-size: 1.2rem;"></i>
             </button>
 
 
-            {{-- โลโก้แบรนด์ (ซ่อนโลโก้ใน Navbar เมื่อ Sidebar เปิดบน Desktop) --}}
+            {{-- โลโก้แบรนด์ --}}
             <a class="navbar-brand fw-bold d-flex align-items-center d-lg-none" href="{{ url('/dashboard') }}">
                 {{-- <span>MRO</span> --}}
             </a>
 
-            {{-- **ช่องค้นหา (แสดงบน Desktop และเปิดเมื่อกดปุ่มบน Mobile)** --}}
-            {{-- ลบ margin-left ออก และลบ me-auto/m-auto เพื่อให้ CSS @media จัดการแทน --}}
-            {{-- <div class="search-container d-none d-lg-flex" id="searchContainer">
-                <form class="d-flex w-100" role="search">
-                    <div class="input-group">
-                        <input class="form-control" type="search" placeholder="ค้นหา..." aria-label="Search"
-                            style="min-width: 300px;">
-                        <button class="btn btn-outline-secondary" type="submit">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    
-                        <button class="btn btn-link text-dark d-lg-none" type="button" id="closeSearch">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </div>
-                </form>
-            </div> --}}
-            {{-- <div class="search-container d-none d-lg-flex" id="searchContainer">
-              
-                <form class="d-flex w-100" role="search" method="GET" action="{{ url('/noti') }}">
-                    <div class="input-group">
-                        <input class="form-control" type="search" name="search" placeholder="ค้นหา..." aria-label="Search"
-                            style="min-width: 300px;" value="{{ request('search') }}"> 
-                      
-                        <button class="btn btn-outline-secondary" type="submit">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        </div>
-                </form>
-            </div> --}}
+            {{-- ช่องค้นหา (แสดงบน Desktop และเปิดเมื่อกดปุ่มบน Mobile) --}}
             <div class="search-container d-none d-lg-flex" id="searchContainer">
                 <form class="d-flex w-100" role="search" method="GET" action="{{ url('/noti') }}">
                     <div class="input-group">
-                        <input class="form-control" type="search" name="search" placeholder="ค้นหา..." aria-label="Search"
-                            style="min-width: 300px;" value="{{ request('search') }}"> 
-                        
+                        <input class="form-control" type="search" name="search" placeholder="ค้นหา..."
+                            aria-label="Search" style="min-width: 300px;" value="{{ request('search') }}">
+
                         {{-- 1. ปุ่มค้นหา (Submit) --}}
                         <button class="btn btn-outline-secondary" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
-                        
+
                         {{-- 2. ปุ่มล้างการค้นหา (Clear Button) --}}
-                        {{-- ปุ่มนี้จะแสดงก็ต่อเมื่อมีค่า 'search' อยู่ใน URL เท่านั้น --}}
                         @if (request('search'))
                             <a href="{{ url('/noti') }}" class="btn btn-outline-danger" title="ล้างการค้นหา">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                         @endif
+
+                        {{-- 3. ปุ่มปิดช่องค้นหา (Mobile only) --}}
+                        <button class="btn btn-link text-dark d-lg-none" type="button" id="closeSearch">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
                     </div>
                 </form>
             </div>
 
             {{-- ส่วนผู้ใช้งาน/ล็อกเอาต์ --}}
-            <div class="d-flex align-items-center ms-auto">
-                @auth
-                    <span class="text-dark me-3 d-none d-sm-block">
-                        <i class="bi bi-person-circle"></i> {{ Auth::user()->name }}
-                    </span>
-                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                        @csrf
-                        <button type="submit" class="btn btn-light btn-sm">
-                            <i class="bi bi-box-arrow-right"></i>ออกจากระบบ
+            {{-- รหัสและชื่อสาขาของผู้ใช้งาน --}}
+            <div class="d-flex align-items-center me-3 d-none d-sm-flex">
+                <i class="bi bi-shop me-2 text-muted"></i>
+                <div class="d-flex flex-column text-end" style="line-height: 1.2;">
+                    {{-- รหัสสาขา --}}
+                    <strong class="text-dark small">
+                        [{{ Session::get('branch_code', 'ไม่พบสาขา') }}]
+                        </strong>
+                    {{-- ชื่อสาขา (ถ้ามี) --}}
+                    {{-- @if (Session::has('branch_name'))
+                                    <span class="text-muted smaller">{{ Session::get('branch_name') }}</span>
+                                @endif --}}
+                    </div>
+                </div>
+            
+            <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center ms-auto">
+                    @auth
+                        {{-- Dropdown สำหรับผู้ใช้งานที่ล็อกอินแล้ว --}}
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center border" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false" id="userProfileDropdown">
+                                {{-- Icon และชื่อผู้ใช้ (ซ่อนชื่อบน Mobile เล็ก) --}}
+                                <i class="bi bi-person-circle me-1" style="font-size: 1.2rem;"></i>
+                                <span class="d-none d-sm-block">{{ Auth::user()->name }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="userProfileDropdown">
+                                {{-- ส่วนหัวข้อมูลผู้ใช้: ใช้ staffname หากมี หรือใช้ name --}}
+                                <li>
+                                    <div class="px-3 pt-2 pb-1 text-muted small">
+                                        เข้าสู่ระบบในชื่อ: <br>
+                                        {{-- **จุดแก้ไข: ให้ใช้ staffname หากมี, ถ้าไม่มีให้ใช้ name** --}}
+                                        <strong class="text-dark">
+                                            {{ Auth::user()->staffname ?? Auth::user()->name }}
+
+                                        </strong>
+
+                                    </div>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                {{-- รายการเมนู --}}
+                                <li><a class="dropdown-item" href="#">
+                                        <i class="bi bi-person me-2"></i>โปรไฟล์ของฉัน
+                                    </a></li>
+                                <li><a class="dropdown-item" href="#">
+                                        <i class="bi bi-gear me-2"></i>ตั้งค่าบัญชี
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                {{-- ปุ่มออกจากระบบ --}}
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    @else
+                        {{-- Dropdown สำหรับ Guest (ตามที่ผู้ใช้ร้องขอ) --}}
+                        {{-- <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle d-flex align-items-center border" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="guestProfileDropdown">
+                            <i class="bi bi-person-circle me-1 text-secondary" style="font-size: 1.2rem;"></i>
+                            <span class="d-none d-sm-block">ชวัลลักษณ์ เพชรอย่างดี</span>
+                     
                         </button>
-                    </form>
-                @else
-                    <a href="#" class="btn btn-light btn-sm">เข้าสู่ระบบ</a>
-                @endauth
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="guestProfileDropdown">
+                            <li>
+                                <div class="px-3 pt-2 pb-1 text-muted small">
+                                    สถานะ: <br>
+                                    <strong class="text-dark">Adminช่าง(Store)</strong>
+                                </div>
+                            </li>
+                     
+                            <li>
+                                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item fw-bold text-danger">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>ออกจากระบบ
+                                    </button>
+                                </form>
+                            </li>
+                           
+                        </ul>
+                    </div> --}}
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center border" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false" id="guestProfileDropdown">
+                                {{-- Icon --}}
+                                <i class="bi bi-person-circle me-1 text-secondary" style="font-size: 1.2rem;"></i>
+
+                                {{-- *** แก้ไขตรงนี้: เรียกชื่อจาก Session *** --}}
+                                <span class="d-none d-sm-block">
+                                    {{ Session::get('staffname') }}
+                                </span>
+
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="guestProfileDropdown">
+                                <li>
+                                    <div class="px-3 pt-2 pb-1 text-muted small">
+                                        สถานะ: <br>
+                                        {{-- *** (แนะนำเพิ่มเติม) แก้สถานะให้ดึงจาก Session ด้วย *** --}}
+                                        <strong class="text-dark">
+                                            {{ Session::get('role') ?? 'Adminช่าง(Store)' }}
+                                        </strong>
+                                    </div>
+                                </li>
+                                {{-- ... ส่วนปุ่ม Logout ... --}}
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item fw-bold text-danger">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>ออกจากระบบ
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    @endauth
+                </div>
             </div>
-        </div>
     </nav>
 
     <div class="overlay" id="overlay"></div>
     <div class="container-fluid">
         <div class="row">
             <div class="sidebar p-3" id="sidebarMenu">
-                {{-- โลโก้ navbar Mobile (ถูกจัดให้อยู่ข้างใน Sidebar) --}}
+                {{-- โลโก้ navbar Mobile --}}
                 <div class="d-lg-none d-flex justify-content-between align-items-center mb-3">
                     <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url('/dashboard') }}">
-                        <img src="{{ asset('images/MROlogo.png') }}" alt="TGI Logo" class="me-2" style="height: 35px;">
+                        <img src="{{ asset('images/MROlogo.png') }}" alt="TGI Logo" class="me-2"
+                            style="height: 35px;">
                     </a>
 
                     <button class="btn btn-link text-dark p-0" id="closeSidebar" aria-label="Close"
@@ -291,23 +362,33 @@
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-                {{-- โลโก้ navbar Desktop (ถูกจัดให้อยู่ข้างใน Sidebar) --}}
+                {{-- โลโก้ navbar Desktop --}}
                 <div class="d-none d-lg-block mb-3">
                     <a class="navbar-brand fw-bold d-flex align-items-start" href="{{ url('/dashboard') }}">
                         <img src="{{ asset('images/MROlogo.png') }}" alt="TGI Logo" style="height: 35px;">
                     </a>
                 </div>
                 <nav class="nav flex-column">
-                    <a class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}" href="{{ url('/dashboard') }}">
+                    <a class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}"
+                        href="{{ url('/countnotirpair') }}">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
-                    <a class="nav-link {{ request()->is('notirepair*') ? 'active' : '' }}"
-                        href="{{ url('/notirepair') }}">
+                    <a class="nav-link {{ request()->is('notirepair') ? 'active' : '' }}"
+                        href="{{ url('/noti') }}">
                         <i class="bi bi-list-task"></i> รายการแจ้งซ่อม
                     </a>
-                    <a class="nav-link {{ request()->is('notirepair*') ? 'active' : '' }}"
-                        href="{{ url('/notirepair') }}">
+                    <a class="nav-link {{ request()->is('notirepair/history') ? 'active' : '' }}"
+                        href="{{ url('/history') }}">
                         <i class="bi bi-clock-history"></i> ประวัติการแจ้งซ่อม
+                    </a>
+
+                    <a class="nav-link {{ request()->is('notirepair/sucess') ? 'active' : '' }}"
+                        href="{{ url('/noti/storefront') }}">
+                        <i class="bi bi-box-seam"></i> สถานะรับของ
+                    </a>
+                    <a class="nav-link {{ request()->is('notirepair/statusrecive') ? 'active' : '' }}"
+                        href="{{ url('/notirepair/history') }}">
+                        <i class="bi bi-check-circle"></i> สำเร็จเเล้ว
                     </a>
                     <a class="nav-link" href="#">
                         <i class="bi bi-people"></i> ผู้ใช้งาน
@@ -318,7 +399,6 @@
                 </nav>
             </div>
 
-            {{-- <div class="col-lg-10 col-md-9 content-area"> --}}
             <div class="content-area">
                 @yield('content')
             </div>
@@ -344,6 +424,7 @@
                 document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
             }
         }
+
         function toggleSearch() {
             if (window.innerWidth < 992) {
                 searchContainer.classList.toggle('active');

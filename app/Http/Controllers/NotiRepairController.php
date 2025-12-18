@@ -271,7 +271,6 @@ class NotiRepairController extends Controller
                 'equipment.equipmentName as equipmentName'
             )
                 ->leftJoin('equipment', 'equipment.equipmentId', '=', 'notirepair.equipmentId')
-
                 // 2) Join subquery
                 ->leftJoinSub($latestStatusId, 'latest_id_table', function ($join) {
                     $join->on('notirepair.NotirepairId', '=', 'latest_id_table.NotirepairId');
@@ -569,6 +568,10 @@ class NotiRepairController extends Controller
         $check = StatustrackingRepository::getAllStatustracking();
         return $check;
     }
+    //dashbordofficer
+    public static function showState(){
+
+    }
     //dashbord store 
     public static function NotiRepairHistory()
     {
@@ -606,4 +609,88 @@ class NotiRepairController extends Controller
   
     // }
  
+
+
+    // เพิ่มใน NotirepairRepository.php
+
+// public static function getTrackingListForAdmin($searchTerm = null, $perPage = 15)
+// {
+//     // 1. ดึง ID ล่าสุดของสถานะจากตาราง statustracking (DB ที่สาม)
+//     $latestStatusId = DB::connection('third')
+//         ->table('statustracking')
+//         ->select('NotirepairId', DB::raw('MAX(statustrackingId) as latest_id'))
+//         ->groupBy('NotirepairId');
+
+//     // 2. Query หลัก
+//     $query = Notirepair::select(
+//             'notirepair.*',
+//             'equipment.equipmentName',
+//             DB::raw("COALESCE(latest_status.status, 'ยังไม่ได้รับของ') as current_status"),
+//             'latest_status.statusDate as last_status_date'
+//         )
+//         ->leftJoin('equipment', 'notirepair.equipmentId', '=', 'equipment.equipmentId')
+//         // Join เพื่อเอา ID ล่าสุด
+//         ->leftJoinSub($latestStatusId, 'latest_id_table', function ($join) {
+//             $join->on('notirepair.NotirepairId', '=', 'latest_id_table.NotirepairId');
+//         })
+//         // Join เพื่อเอาชื่อสถานะจริงจาก DB ที่สาม
+//         ->leftJoin(
+//             DB::raw(env('THIRD_DB_DATABASE') . '.statustracking as latest_status'),
+//             function ($join) {
+//                 $join->on('latest_status.NotirepairId', '=', 'notirepair.NotirepairId')
+//                      ->on('latest_status.statustrackingId', '=', 'latest_id_table.latest_id');
+//             }
+//         );
+
+//     // 3. ระบบค้นหา (ถ้ามี)
+//     if ($searchTerm) {
+//         $query->where(function ($q) use ($searchTerm) {
+//             $q->where('notirepair.NotirepairId', 'like', "%$searchTerm%")
+//               ->orWhere('notirepair.branchCode', 'like', "%$searchTerm%")
+//               ->orWhere('equipment.equipmentName', 'like', "%$searchTerm%");
+//         });
+//     }
+
+//     return $query->orderBy('notirepair.DateNotirepair', 'desc')
+//                  ->paginate($perPage)
+//                  ->withQueryString();
+// }
+// เพิ่มใน NotiRepairController.php
+
+public function officerTracking(Request $request)
+{
+    // รับค่าค้นหาจากหน้าเว็บ
+    $search = $request->input('search');
+
+    $jobs = NotirepairRepository::getTrackingListForAdmin($search);
+
+    return view('dashborad.office', compact('jobs'));
+}
+// public function officerTracking(Request $request)
+// {
+//     $search = $request->input('search');
+//     $status = $request->input('status');
+
+//     $query = DB::table('notirepair') 
+//         ->select('NotirepairId', 'branchCode', 'equipmentName', 'current_status', 'last_status_date', 'DateCloseJobs');
+
+//     // ระบบค้นหา
+//     if ($search) {
+//         $query->where(function($q) use ($search) {
+//             $q->where('NotirepairId', 'LIKE', "%{$search}%")
+//               ->orWhere('branchCode', 'LIKE', "%{$search}%")
+//               ->orWhere('equipmentName', 'LIKE', "%{$search}%");
+//         });
+//     }
+
+//     // กรองตามสถานะ (ถ้ามีการเลือก)
+//     if ($status) {
+//         $query->where('current_status', $status);
+//     }
+
+//     $jobs = $query->orderBy('last_status_date', 'desc')->paginate(10);
+
+//     return view('officer_tracking', compact('jobs'));
+// }
+
 }

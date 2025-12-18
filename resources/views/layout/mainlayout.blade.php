@@ -238,41 +238,22 @@
                     @auth
                         {{-- Dropdown สำหรับผู้ใช้งานที่ล็อกอินแล้ว --}}
                         <div class="dropdown">
-                            <button class="btn btn-light dropdown-toggle d-flex align-items-center border" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false" id="userProfileDropdown">
-                                {{-- Icon และชื่อผู้ใช้ (ซ่อนชื่อบน Mobile เล็ก) --}}
-                                <i class="bi bi-person-circle me-1" style="font-size: 1.2rem;"></i>
-                                <span class="d-none d-sm-block">{{ Auth::user()->name }}</span>
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center border" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i>
+                                {{-- ใช้ Session แทน Auth::user() --}}
+                                <span class="d-none d-sm-block">{{ Session::get('staffname') }}</span>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="userProfileDropdown">
-                                {{-- ส่วนหัวข้อมูลผู้ใช้: ใช้ staffname หากมี หรือใช้ name --}}
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg">
                                 <li>
                                     <div class="px-3 pt-2 pb-1 text-muted small">
-                                        เข้าสู่ระบบในชื่อ: <br>
-                                        {{-- **จุดแก้ไข: ให้ใช้ staffname หากมี, ถ้าไม่มีให้ใช้ name** --}}
-                                        <strong class="text-dark">
-                                            {{ Auth::user()->staffname ?? Auth::user()->name }}
-
-                                        </strong>
-
+                                        สถานะ: <br>
+                                        <strong class="text-dark">{{ Session::get('role') }}</strong>
                                     </div>
                                 </li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                {{-- รายการเมนู --}}
-                                <li><a class="dropdown-item" href="#">
-                                        <i class="bi bi-person me-2"></i>โปรไฟล์ของฉัน
-                                    </a></li>
-                                <li><a class="dropdown-item" href="#">
-                                        <i class="bi bi-gear me-2"></i>ตั้งค่าบัญชี
-                                    </a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                {{-- ปุ่มออกจากระบบ --}}
-                                <li>
-                                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                    {{-- ปรับปุ่ม Logout ให้ส่งไปที่ Controller ของคุณ --}}
+                                    <form action="{{ route('logout') }}" method="POST">
                                         @csrf
                                         <button type="submit" class="dropdown-item text-danger">
                                             <i class="bi bi-box-arrow-right me-2"></i>ออกจากระบบ
@@ -282,32 +263,7 @@
                             </ul>
                         </div>
                     @else
-                        {{-- Dropdown สำหรับ Guest (ตามที่ผู้ใช้ร้องขอ) --}}
-                        {{-- <div class="dropdown">
-                        <button class="btn btn-light dropdown-toggle d-flex align-items-center border" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="guestProfileDropdown">
-                            <i class="bi bi-person-circle me-1 text-secondary" style="font-size: 1.2rem;"></i>
-                            <span class="d-none d-sm-block">ชวัลลักษณ์ เพชรอย่างดี</span>
-                     
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="guestProfileDropdown">
-                            <li>
-                                <div class="px-3 pt-2 pb-1 text-muted small">
-                                    สถานะ: <br>
-                                    <strong class="text-dark">Adminช่าง(Store)</strong>
-                                </div>
-                            </li>
-                     
-                            <li>
-                                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item fw-bold text-danger">
-                                        <i class="bi bi-box-arrow-in-right me-2"></i>ออกจากระบบ
-                                    </button>
-                                </form>
-                            </li>
-                           
-                        </ul>
-                    </div> --}}
+                   
                         <div class="dropdown">
                             <button class="btn btn-light dropdown-toggle d-flex align-items-center border" type="button"
                                 data-bs-toggle="dropdown" aria-expanded="false" id="guestProfileDropdown">

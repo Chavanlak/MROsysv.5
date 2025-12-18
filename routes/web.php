@@ -168,8 +168,12 @@ Route::middleware(['RoleMiddleware:AdminTechnicianStore'])->group(function () {
     Route::post('/updaterecive', [NotiRepairController::class, 'updateStatus'])->name('notiupdate');
 
 });
+//clear session
 
-
+// Route::get('/clear-session', function () {
+//     Session::flush(); // ล้างข้อมูลทุกอย่างใน Session
+//     return "Session cleared! กลับไปหน้า Login แล้วลองใหม่ครับ";
+// });
 Route::middleware(['RoleMiddleware:Frontstaff'])->group(function () {
 
     // หน้า Dashboard สำหรับหน้าร้าน
@@ -179,6 +183,9 @@ Route::middleware(['RoleMiddleware:Frontstaff'])->group(function () {
     Route::post('/noti/close/{notirepaitid}', [NotiRepairController::class, 'closedJobs'])->name('noti.close');
 
 });
+
+//officer
+Route::get('/ofiicer',[NotiRepairController::class,'officerTracking'])->name('officer.tracking')->middleware('RoleMiddleware:AdminOfficer');
 
 // Route สำหรับ Action 'รับของ' (ใช้ POST เพื่อเปลี่ยนสถานะ)
 // 💡 URL: /noti/accept/{NotirepairId}

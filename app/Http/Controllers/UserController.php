@@ -128,72 +128,122 @@ class UserController extends Controller
 //     // ส่งไป Route /repair (ซึ่งมี Middleware customauth คอยเช็ค Session logged_in ที่เราเพิ่งสร้างข้างบน)
 //     return redirect('/repair')->with('success', 'เข้าสู่ระบบสำเร็จ');
 // }
-public function loginPost(Request $request){
 
+public function loginPost(Request $request) {
     $staffcode = $request->input('staffcode');
     $staffpassword = $request->input('staffpassword');
-    $loginMode = $request->input('login_mode'); // รับค่า mode ที่เลือกมา (repair หรือ storefront)
+    $loginMode = $request->input('login_mode');
 
-    $user = DB::table('staff_rc')->where('staffcode',$staffcode)->first();
+    $user = DB::table('staff_rc')->where('staffcode', $staffcode)->first();
 
-    // 1. ตรวจสอบว่ามี User หรือไม่
-    if(!$user){
-        return redirect('/')->with('error','ไม่พบผู้ใช้');
+    // 1. ตรวจสอบ User & Password
+    if (!$user || $user->staffpassword != $staffpassword) {
+        return redirect('/')->with('error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
     }
 
-    // 2. ตรวจสอบรหัสผ่าน
-    if($user->staffpassword != $staffpassword){
-        return redirect('/')->with('error', 'รหัสผ่านไม่ถูกต้อง'); 
-    }
+    // 2. เก็บข้อมูลลง Session (ใช้แทน Auth)
+    Session::put('logged_in', true);
+    Session::put('staffcode', $user->staffcode);
+    Session::put('staffname', $user->staffname);
+    Session::put('role', $user->role);
 
-    // 3. เก็บ Session
-    Session::put('logged_in',true);
-    Session::put('staffname',$user->staffname);
-    Session::put('staffcode',$user->staffcode);
-    Session::put('permis_BM',$user->permis_BM);
-    Session::put('role',$user->role);
-    if ($user->role === 'FrontStaff' || $user->role === 'Frontstaff') {
+    // 3. จัดการเรื่องสาขา (สำหรับ FrontStaff)
+    if (in_array(strtolower($user->role), ['frontstaff'])) {
         try {
-            // ดึงรหัสสาขา (Branch Code) จาก permission_bm (ฐานข้อมูล MMS)
-            $branchCode = PermissionBMRepository::getBranchCode($staffcode); 
-            
-            // เก็บ Branch Code ลงใน Session
-            Session::put('branch_code', $branchCode); 
-            
-            // Note: ถ้าต้องการชื่อสาขาด้วย ต้องเพิ่ม Logic ดึงชื่อสาขามาเก็บใน Session ด้วย
-
-        } catch (\Throwable $th) {
-            // หากเกิด Error เช่น ไม่พบข้อมูลใน permission_bm, ให้จัดการ Error ที่นี่
-            // คุณอาจเลือกที่จะให้ล็อกอินผ่าน แต่แสดงข้อความเตือน หรือบังคับไม่ให้ล็อกอินต่อ
-            // ในที่นี้ เราจะอนุญาตให้ผ่าน แต่เตือนว่าอาจมีปัญหาการกรอง
-            Session::put('branch_code', null); 
-            // return redirect('/')->with('error', 'เข้าสู่ระบบสำเร็จ แต่ไม่พบข้อมูลสาขาในฐานข้อมูล MMS');
+            $branchCode = PermissionBMRepository::getBranchCode($staffcode);
+            Session::put('branch_code', $branchCode);
+        } catch (\Exception $e) {
+            Session::put('branch_code', 'Unknown');
         }
+    } else {
+        Session::put('branch_code', 'Store'); // Admin/Officer ให้เป็นส่วนกลาง
     }
-    // 4. Redirect ตาม Mode ที่เลือกมา
-    
-    // --- กรณีเลือกเข้าโหมด "หน้าร้าน" (Front Staff) ---
+
+    // 4. การ Redirect ตาม Mode และ Role
     if ($loginMode === 'storefront') {
-        // เช็คก่อนว่า User มีสิทธิ์ FrontStaff จริงไหม
-        // (เช็คทั้ง s เล็ก s ใหญ่เผื่อไว้ หรือเช็คตาม DB จริงของคุณ)
-        if ($user->role === 'FrontStaff' || $user->role === 'Frontstaff') {
-             return redirect()->route('noti.storefront');
-        } else {
-             // ถ้าเลือกโหมดหน้าร้าน แต่ไม่มีสิทธิ์
-             return redirect('/')->with('error', 'คุณไม่มีสิทธิ์เข้าใช้งานส่วนหน้าร้าน');
+        if (strtolower($user->role) === 'frontstaff') {
+            return redirect()->route('noti.storefront');
         }
+        return redirect('/')->with('error', 'คุณไม่มีสิทธิ์เข้าโหมดหน้าร้าน');
     }
 
-    // --- กรณีเลือกเข้าโหมด "แจ้งซ่อม" (Repair) หรืออื่นๆ ---
-    // (Admin อาจจะข้ามเงื่อนไขนี้ไป Dashboard Admin เลยก็ได้ แล้วแต่ Design)
-    if ($user->role === 'AdminTechnicianStore') {
-        return redirect()->route('noti.list');
-    }
-
-    // ถ้าเลือกโหมด Repair ให้ส่งไปที่ /repair 
-    // ตัว Controller ShowRepairForm ของคุณจะจัดการเองว่าถ้าเป็น BM ให้ไปหน้า repairBM ถ้าไม่ใช่ให้ไปหน้า repair ปกติ
-    return redirect('/repair')->with('success', 'เข้าสู่ระบบสำเร็จ');
+    // โหมดแจ้งซ่อมปกติ
+    return match ($user->role) {
+        'AdminTechnicianStore' => redirect()->route('noti.list'),
+        'AdminOfficer'         => redirect()->route('officer.tracking'),
+        default                => redirect('/repair'),
+    };
 }
+//old
+// public function loginPost(Request $request){
+
+//     $staffcode = $request->input('staffcode');
+//     $staffpassword = $request->input('staffpassword');
+//     $loginMode = $request->input('login_mode'); // รับค่า mode ที่เลือกมา (repair หรือ storefront)
+
+//     $user = DB::table('staff_rc')->where('staffcode',$staffcode)->first();
+
+//     // 1. ตรวจสอบว่ามี User หรือไม่
+//     if(!$user){
+//         return redirect('/')->with('error','ไม่พบผู้ใช้');
+//     }
+
+//     // 2. ตรวจสอบรหัสผ่าน
+//     if($user->staffpassword != $staffpassword){
+//         return redirect('/')->with('error', 'รหัสผ่านไม่ถูกต้อง'); 
+//     }
+
+//     // 3. เก็บ Session
+//     Session::put('logged_in',true);
+//     Session::put('staffname',$user->staffname);
+//     Session::put('staffcode',$user->staffcode);
+//     Session::put('permis_BM',$user->permis_BM);
+//     Session::put('role',$user->role);
+//     if ($user->role === 'FrontStaff' || $user->role === 'Frontstaff') {
+//         try {
+//             // ดึงรหัสสาขา (Branch Code) จาก permission_bm (ฐานข้อมูล MMS)
+//             $branchCode = PermissionBMRepository::getBranchCode($staffcode); 
+            
+//             // เก็บ Branch Code ลงใน Session
+//             Session::put('branch_code', $branchCode); 
+            
+//             // Note: ถ้าต้องการชื่อสาขาด้วย ต้องเพิ่ม Logic ดึงชื่อสาขามาเก็บใน Session ด้วย
+
+//         } catch (\Throwable $th) {
+//             // หากเกิด Error เช่น ไม่พบข้อมูลใน permission_bm, ให้จัดการ Error ที่นี่
+//             // คุณอาจเลือกที่จะให้ล็อกอินผ่าน แต่แสดงข้อความเตือน หรือบังคับไม่ให้ล็อกอินต่อ
+//             // ในที่นี้ เราจะอนุญาตให้ผ่าน แต่เตือนว่าอาจมีปัญหาการกรอง
+//             Session::put('branch_code', null); 
+//             // return redirect('/')->with('error', 'เข้าสู่ระบบสำเร็จ แต่ไม่พบข้อมูลสาขาในฐานข้อมูล MMS');
+//         }
+//     }
+//     // 4. Redirect ตาม Mode ที่เลือกมา
+    
+//     // --- กรณีเลือกเข้าโหมด "หน้าร้าน" (Front Staff) ---
+//     if ($loginMode === 'storefront') {
+//         // เช็คก่อนว่า User มีสิทธิ์ FrontStaff จริงไหม
+//         // (เช็คทั้ง s เล็ก s ใหญ่เผื่อไว้ หรือเช็คตาม DB จริงของคุณ)
+//         if ($user->role === 'FrontStaff' || $user->role === 'Frontstaff') {
+//              return redirect()->route('noti.storefront');
+//         } else {
+//              // ถ้าเลือกโหมดหน้าร้าน แต่ไม่มีสิทธิ์
+//              return redirect('/')->with('error', 'คุณไม่มีสิทธิ์เข้าใช้งานส่วนหน้าร้าน');
+//         }
+//     }
+
+//     // --- กรณีเลือกเข้าโหมด "แจ้งซ่อม" (Repair) หรืออื่นๆ ---
+//     // (Admin อาจจะข้ามเงื่อนไขนี้ไป Dashboard Admin เลยก็ได้ แล้วแต่ Design)
+//     if ($user->role === 'AdminTechnicianStore') {
+//         return redirect()->route('noti.list');
+//     }
+//     if($user->role === 'AdminOfficer'){
+//         return redirect()->route('officer.tracking');
+//     }
+
+//     // ถ้าเลือกโหมด Repair ให้ส่งไปที่ /repair 
+//     // ตัว Controller ShowRepairForm ของคุณจะจัดการเองว่าถ้าเป็น BM ให้ไปหน้า repairBM ถ้าไม่ใช่ให้ไปหน้า repair ปกติ
+//     return redirect('/repair')->with('success', 'เข้าสู่ระบบสำเร็จ');
+// }
     public function loginerror()
     {
         return view('loginerror');

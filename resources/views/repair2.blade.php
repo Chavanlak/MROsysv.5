@@ -94,9 +94,10 @@
                             <input type="hidden" name="submission_token" value="{{ $submissionToken }}">
                             {{-- <input type="hidden" name="branchname" value="{{ $branchname }}"> --}}
                             {{-- <input type="hidden" name="zonename" value="{{ $zonename }}"> --}}
-                            
+
                             {{-- 🛑 เพิ่ม Hidden Input Field เพื่อส่ง Branch Code ไปที่ saveNotiRepair --}}
-                            <input type="hidden" name="branchCode" value="{{ Session::get('branchcode') }}">                            <input type="hidden" name="branchid" value="{{ $branchid }}">
+                            <input type="hidden" name="branchCode" value="{{ Session::get('branchcode') }}"> <input
+                                type="hidden" name="branchid" value="{{ $branchid }}">
                             <input type="hidden" name="branch" value="{{ $branchname }}">
                             {{-- <input type="hidden" name="branchname" value="{{ $branchname}}"> --}}
                             <input type="hidden" name="zone" value="{{ $zonename }}">

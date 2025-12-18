@@ -96,7 +96,7 @@
             @endif
         </form> --}}
 
-        <form action="/loginpost" method="post">
+        {{-- <form action="/loginpost" method="post">
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
         
             <input type="text" class="form-control" placeholder="Username" name="staffcode" required>
@@ -116,6 +116,36 @@
             @endif
             @if (session('error'))
                 <div class="text-danger mt-2">{{session('error')}}</div>
+            @endif
+        </form> --}}
+        <form action="{{ url('/loginpost') }}" method="post">
+            @csrf {{-- สั้นกว่าและปลอดภัยกว่า --}}
+        
+            <div class="mb-3">
+                <label class="form-label text-sm text-gray-600">รหัสพนักงาน</label>
+                <input type="text" class="form-control" placeholder="Username" name="staffcode" required>
+            </div>
+        
+            <div class="mb-3">
+                <label class="form-label text-sm text-gray-600">รหัสผ่าน</label>
+                <input type="password" class="form-control" placeholder="Password" name="staffpassword" required>
+            </div>
+        
+            <div class="mb-3">
+                <label for="login_mode" class="form-label text-sm text-gray-600">เลือกประเภทการเข้าใช้งาน</label>
+                <select class="form-select form-control" name="login_mode" id="login_mode">
+                    <option value="repair" selected>แจ้งซ่อม (Repair User)</option>
+                    <option value="storefront">หน้าร้าน/Dashboard (Front Staff)</option>
+                </select>
+            </div>
+        
+            <button type="submit" class="btn btn-login mt-3 shadow-sm">เข้าสู่ระบบ</button>
+            
+            {{-- ส่วนแสดงข้อความแจ้งเตือน --}}
+            @if (session('error'))
+                <div class="alert alert-danger mt-3 py-2 small">
+                    <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
+                </div>
             @endif
         </form>
     </div>
